@@ -1,0 +1,156 @@
+<canvas id="cyber-canvas" aria-hidden="true"></canvas>
+
+<style>
+  #cyber-canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+  }
+</style>
+
+<script>
+  (function () {
+    const canvas = document.getElementById('cyber-canvas') as HTMLCanvasElement | null;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const fxBtn = document.getElementById('fxToggle');
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const savedFx = localStorage.getItem('cyber-fx');
+    let fxEnabled = savedFx ? savedFx === 'on' : !reduceMotion;
+
+    const syncFxState = () => {
+      document.body.classList.toggle('fx-off', !fxEnabled);
+      if (fxBtn) fxBtn.textContent = fxEnabled ? 'FX: ON' : 'FX: OFF';
+    };
+
+    syncFxState();
+
+    let width = 0;
+    let height = 0;
+    let dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const mouse = { x: -9999, y: -9999 };
+    let particles: Array<{
+      x: number;
+      y: number;
+      size: number;
+      speedY: number;
+      color: string;
+      alpha: number;
+    }> = [];
+    let gridOffset = 0;
+
+    function initParticles() {
+      const count = width < 640 ? 28 : 56;
+      particles = Array.from({ length: count }, () => ({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        size: Math.random() > 0.5 ? 3 : 2,
+        speedY: 0.35 + Math.random() * 0.85,
+        color: Math.random() > 0.72 ? '#ff2a85' : Math.random() > 0.35 ? '#00f0ff' : '#39ff14',
+        alpha: 0.25 + Math.random() * 0.55,
+      }));
+    }
+
+    function resize() {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      initParticles();
+    }
+
+    function drawPerspectiveGrid() {
+      const horizon = height * 0.58;
+      ctx.save();
+      ctx.strokeStyle = 'rgba(0, 240, 255, 0.11)';
+      ctx.lineWidth = 1;
+
+      const centerX = width * 0.5;
+      const cols = 16;
+      for (let i = -cols; i <= cols; i++) {
+        ctx.beginPath();
+        ctx.moveTo(centerX + i * 28, horizon);
+        ctx.lineTo(centerX + i * 130, height);
+        ctx.stroke();
+      }
+
+      const rows = 12;
+      gridOffset = (gridOffset + 0.45) % 40;
+      for (let r = 0; r < rows; r++) {
+        const progress = (r + gridOffset / 40) / rows;
+        const y = horizon + Math.pow(progress, 2.1) * (height - horizon);
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function drawParticles() {
+      for (const p of particles) {
+        p.y += p.speedY;
+        if (p.y > height + 10) {
+          p.y = -10;
+          p.x = Math.random() * width;
+        }
+
+        const dist = Math.hypot(mouse.x - p.x, mouse.y - p.y);
+        ctx.globalAlpha = dist < 130 ? Math.min(1, p.alpha + 0.45) : p.alpha;
+        ctx.fillStyle = p.color;
+        ctx.fillRect(Math.round(p.x), Math.round(p.y), p.size, p.size);
+
+        if (dist < 110) {
+          ctx.beginPath();
+          ctx.strokeStyle = 'rgba(0, 240, 255, 0.22)';
+          ctx.lineWidth = 1;
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(mouse.x, mouse.y);
+          ctx.stroke();
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    let rafId: number | null = null;
+    function render() {
+      ctx.clearRect(0, 0, width, height);
+      if (!fxEnabled) return;
+      drawPerspectiveGrid();
+      drawParticles();
+      rafId = requestAnimationFrame(render);
+    }
+
+    window.addEventListener('resize', resize);
+    window.addEventListener('mousemove', (e) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    });
+    window.addEventListener('mouseleave', () => {
+      mouse.x = -9999;
+      mouse.y = -9999;
+    });
+
+    fxBtn?.addEventListener('click', () => {
+      fxEnabled = !fxEnabled;
+      localStorage.setItem('cyber-fx', fxEnabled ? 'on' : 'off');
+      syncFxState();
+      if (fxEnabled) {
+        render();
+      } else {
+        if (rafId !== null) cancelAnimationFrame(rafId);
+        ctx.clearRect(0, 0, width, height);
+      }
+    });
+
+    resize();
+    if (fxEnabled) render();
+  })();
+</script>

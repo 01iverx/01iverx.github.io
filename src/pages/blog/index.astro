@@ -1,0 +1,101 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostCard from '../../components/PostCard.astro';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+
+const allTags = Array.from(new Set(posts.flatMap((p) => p.data.tags))).sort();
+---
+
+<BaseLayout title="Blog // 01iverx" description="01iverx 的 C++、Python 与 AI-Infra 技术笔记。">
+  <div class="blog-header">
+    <h1 class="glitch" data-text="DEV_LOGS">DEV_LOGS</h1>
+    <p class="blog-sub">记录 C++、Python 与 AI-Infra 的系统工程笔记。</p>
+  </div>
+
+  {allTags.length > 0 && (
+    <div class="tag-filter" id="tagFilter">
+      <button class="filter-btn active" type="button" data-tag="ALL">ALL ({posts.length})</button>
+      {allTags.map((tag) => (
+        <button class="filter-btn" type="button" data-tag={tag}>#{tag}</button>
+      ))}
+    </div>
+  )}
+
+  <div class="posts-list" id="postsList">
+    {posts.map((post) => (
+      <PostCard
+        slug={post.id}
+        title={post.data.title}
+        description={post.data.description}
+        date={post.data.date}
+        tags={post.data.tags}
+      />
+    ))}
+  </div>
+</BaseLayout>
+
+<style>
+  .blog-header {
+    margin-bottom: 22px;
+  }
+
+  .blog-sub {
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 0.94rem;
+  }
+
+  .tag-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .filter-btn {
+    appearance: none;
+    background: var(--panel-inner);
+    border: 1px solid var(--border-soft);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 0.76rem;
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+  }
+
+  .filter-btn:hover,
+  .filter-btn.active {
+    border-color: var(--cyan);
+    color: var(--cyan);
+    background: rgba(0, 240, 255, 0.1);
+  }
+
+  .posts-list {
+    display: grid;
+    gap: 14px;
+  }
+</style>
+
+<script>
+  const filterRoot = document.getElementById('tagFilter');
+  const cards = document.querySelectorAll<HTMLElement>('#postsList .post-card');
+
+  filterRoot?.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('.filter-btn');
+    if (!btn) return;
+
+    const selected = btn.dataset.tag || 'ALL';
+    filterRoot.querySelectorAll('.filter-btn').forEach((el) => el.classList.remove('active'));
+    btn.classList.add('active');
+
+    cards.forEach((card) => {
+      const tags = (card.dataset.tags || '').split(',');
+      card.style.display = selected === 'ALL' || tags.includes(selected) ? 'block' : 'none';
+    });
+  });
+</script>

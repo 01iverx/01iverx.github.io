@@ -1,0 +1,52 @@
+---
+import '../styles/global.css';
+import CyberCanvas from '../components/CyberCanvas.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = '01iverx — 独立开发者，专注于 C++、Python 与 AI-Infra。' } = Astro.props;
+const pathname = Astro.url.pathname;
+const isHome = pathname === '/' || pathname === '/index.html';
+const isBlog = pathname.startsWith('/blog');
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body>
+    <CyberCanvas />
+    <div class="scanlines" aria-hidden="true"></div>
+
+    <div class="hud-wrapper">
+      <header class="hud-topbar">
+        <a class="hud-brand" href="/">
+          <span class="pulse-pixel" aria-hidden="true"></span>
+          <span>NODE // 01IVERX</span>
+        </a>
+
+        <nav class="hud-nav" aria-label="主导航">
+          <a class={`nav-link ${isHome ? 'active' : ''}`} href="/">/HOME</a>
+          <a class={`nav-link ${isBlog ? 'active' : ''}`} href="/blog">/BLOG</a>
+          <button class="hud-btn" id="fxToggle" type="button">FX: ON</button>
+        </nav>
+      </header>
+
+      <main class="cyber-panel">
+        <slot />
+      </main>
+
+      <footer class="hud-footer">
+        [ 2026 © 01IVERX // ASTRO + GITHUB PAGES ]
+      </footer>
+    </div>
+  </body>
+</html>

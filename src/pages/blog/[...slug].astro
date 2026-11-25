@@ -1,0 +1,83 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', ({ data }) => !data.draft);
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+const formattedDate = post.data.date.toISOString().slice(0, 10);
+---
+
+<BaseLayout title={`${post.data.title} // 01iverx`} description={post.data.description}>
+  <a class="back-link" href="/blog">&lt;- BACK TO /BLOG</a>
+
+  <article>
+    <header class="article-header">
+      <div class="article-meta">
+        <time datetime={formattedDate}>{formattedDate}</time>
+        <div class="article-tags">
+          {post.data.tags.map((tag) => <span class="tag-pill">#{tag}</span>)}
+        </div>
+      </div>
+      <h1 class="article-title">{post.data.title}</h1>
+      <p class="article-desc">{post.data.description}</p>
+    </header>
+
+    <div class="prose">
+      <Content />
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .back-link {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--pink);
+    margin-bottom: 18px;
+  }
+
+  .article-header {
+    padding-bottom: 20px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .article-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .article-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .article-title {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    line-height: 1.3;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+
+  .article-desc {
+    color: var(--muted);
+    font-size: 0.94rem;
+  }
+</style>

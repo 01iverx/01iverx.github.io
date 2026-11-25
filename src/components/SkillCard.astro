@@ -1,0 +1,85 @@
+---
+import type { SkillItem } from '../data/profile';
+
+interface Props {
+  skill: SkillItem;
+}
+
+const { skill } = Astro.props;
+const bars = Array.from({ length: 8 }, (_, i) => i < skill.level);
+---
+
+<article class={`skill-card accent-${skill.accent}`}>
+  <div class="skill-mod">{skill.id}</div>
+  <h3 class="skill-title">{skill.name}</h3>
+  <p class="skill-desc">{skill.description}</p>
+  <div class="pixel-bar" aria-hidden="true">
+    {bars.map((on) => <i class={on ? 'on' : ''} />)}
+  </div>
+</article>
+
+<style>
+  .skill-card {
+    position: relative;
+    background: var(--panel-inner);
+    border: 1px solid rgba(0, 240, 255, 0.22);
+    padding: 16px 15px 18px;
+    transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+  }
+
+  .skill-card:hover {
+    transform: translate(-2px, -3px);
+    border-color: var(--cyan);
+    box-shadow: 4px 4px 0 rgba(255, 42, 133, 0.75), 0 0 18px rgba(0, 240, 255, 0.18);
+  }
+
+  .skill-mod {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--pink);
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+
+  .skill-title {
+    font-family: var(--mono);
+    font-size: 1.08rem;
+    font-weight: 700;
+    color: var(--cyan);
+    margin-bottom: 6px;
+  }
+
+  .skill-desc {
+    font-size: 0.84rem;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+
+  .pixel-bar {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 3px;
+  }
+
+  .pixel-bar i {
+    display: block;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .accent-cyan .pixel-bar i.on {
+    background: var(--cyan);
+    box-shadow: 0 0 6px rgba(0, 240, 255, 0.5);
+  }
+
+  .accent-yellow .pixel-bar i.on {
+    background: var(--yellow);
+    box-shadow: 0 0 6px rgba(252, 238, 9, 0.45);
+  }
+
+  .accent-pink .pixel-bar i.on {
+    background: var(--pink);
+    box-shadow: 0 0 6px rgba(255, 42, 133, 0.5);
+  }
+</style>

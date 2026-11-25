@@ -1,0 +1,164 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SkillCard from '../components/SkillCard.astro';
+import PostCard from '../components/PostCard.astro';
+import { loadProfileFromReadme } from '../data/profile';
+
+const profile = loadProfileFromReadme();
+
+const recentPosts = (await getCollection('blog', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+---
+
+<BaseLayout title={`${profile.name} // ${profile.role}`} description={profile.intro}>
+  <section class="hero">
+    <div class="pixel-avatar" aria-hidden="true">
+      <img src="/favicon.svg" alt="" width="64" height="64" />
+    </div>
+    <div class="hero-meta">
+      <h1 class="glitch" data-text={profile.name}>{profile.name}</h1>
+      <div class="role-badge">{profile.role}</div>
+    </div>
+  </section>
+
+  <section class="terminal-box">
+    <span class="terminal-cmd">&gt; cat ~/README.md</span>
+    <p class="intro-text">
+      {profile.intro}<span class="cursor" aria-hidden="true"></span>
+    </p>
+  </section>
+
+  <section class="block">
+    <div class="section-header">
+      <span>// CORE_MODULES</span>
+      <span class="tag">[{profile.skills.length} LOADED]</span>
+    </div>
+    <div class="skills-grid">
+      {profile.skills.map((skill) => <SkillCard skill={skill} />)}
+    </div>
+  </section>
+
+  {recentPosts.length > 0 && (
+    <section class="block">
+      <div class="section-header">
+        <span>// RECENT_LOGS</span>
+        <a href="/blog" class="more-link">VIEW ALL -&gt;</a>
+      </div>
+      <div class="posts-list">
+        {recentPosts.map((post) => (
+          <PostCard
+            slug={post.id}
+            title={post.data.title}
+            description={post.data.description}
+            date={post.data.date}
+            tags={post.data.tags}
+          />
+        ))}
+      </div>
+    </section>
+  )}
+</BaseLayout>
+
+<style>
+  .hero {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    margin-bottom: 24px;
+  }
+
+  .pixel-avatar {
+    width: 78px;
+    height: 78px;
+    flex-shrink: 0;
+    background: #0b1020;
+    border: 2px solid var(--cyan);
+    box-shadow: 4px 4px 0 var(--pink), 0 0 18px rgba(0, 240, 255, 0.25);
+    display: grid;
+    place-items: center;
+    padding: 5px;
+  }
+
+  .pixel-avatar img {
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+  }
+
+  .role-badge {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 8px;
+    padding: 3px 10px;
+    background: rgba(252, 238, 9, 0.1);
+    border-left: 3px solid var(--yellow);
+    font-family: var(--mono);
+    font-size: 0.86rem;
+    color: var(--yellow);
+    letter-spacing: 0.04em;
+  }
+
+  .terminal-box {
+    background: var(--panel-inner);
+    border: 1px solid var(--border-soft);
+    padding: 16px 18px;
+    margin-bottom: 28px;
+    font-size: 0.96rem;
+  }
+
+  .terminal-cmd {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    color: var(--green);
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .intro-text {
+    color: #c9d6ef;
+  }
+
+  .cursor {
+    display: inline-block;
+    width: 8px;
+    height: 1em;
+    background: var(--cyan);
+    vertical-align: -2px;
+    margin-left: 4px;
+    animation: blink 0.9s steps(2, start) infinite;
+  }
+
+  .block + .block {
+    margin-top: 30px;
+  }
+
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+
+  .posts-list {
+    display: grid;
+    gap: 12px;
+  }
+
+  .more-link {
+    font-size: 0.76rem;
+    color: var(--pink);
+  }
+
+  @media (max-width: 680px) {
+    .hero {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 14px;
+    }
+
+    .skills-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

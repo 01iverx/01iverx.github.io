@@ -1,0 +1,74 @@
+---
+interface Props {
+  slug: string;
+  title: string;
+  description: string;
+  date: Date;
+  tags: string[];
+}
+
+const { slug, title, description, date, tags } = Astro.props;
+const formattedDate = date.toISOString().slice(0, 10);
+---
+
+<a class="post-card" href={`/blog/${slug}/`} data-tags={tags.join(',')}>
+  <div class="post-meta">
+    <time datetime={formattedDate}>{formattedDate}</time>
+    <div class="post-tags">
+      {tags.map((tag) => <span class="tag-pill">#{tag}</span>)}
+    </div>
+  </div>
+  <h3 class="post-title">{title}</h3>
+  <p class="post-desc">{description}</p>
+</a>
+
+<style>
+  .post-card {
+    display: block;
+    background: var(--panel-inner);
+    border: 1px solid var(--border-soft);
+    padding: 18px 20px;
+    transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+  }
+
+  .post-card:hover {
+    transform: translate(-2px, -2px);
+    border-color: var(--cyan);
+    box-shadow: 4px 4px 0 rgba(255, 42, 133, 0.65);
+    text-shadow: none;
+  }
+
+  .post-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-family: var(--mono);
+    font-size: 0.76rem;
+    color: var(--muted);
+  }
+
+  .post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .post-title {
+    font-size: 1.08rem;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .post-card:hover .post-title {
+    color: var(--cyan);
+  }
+
+  .post-desc {
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+</style>
