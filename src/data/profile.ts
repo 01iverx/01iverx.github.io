@@ -86,8 +86,7 @@ export function loadProfileFromReadme(): ProfileData {
             {
               id: 'MOD_04',
               name: '自动驾驶地图引擎',
-              description:
-                '车端地图引擎架构设计与数据播发性能优化，覆盖地图 ODD 定义与行泊车全场景地图方案，构建海外地图引擎合规体系与仿真 Pipeline，支撑自动驾驶全球化落地。',
+              description: '车端地图引擎架构与高性能数据播发，覆盖地图 ODD、行泊车地图、海外合规与仿真 Pipeline。',
               level: 7,
               accent: 'cyan',
             },
