@@ -19,6 +19,9 @@ export const UI = {
     langLabel: 'Language',
     blogDescription: "01iverx's engineering notes on C++, Python and AI-Infra.",
     blogSubtitle: 'Systems engineering notes on C++, Python and AI-Infra.',
+    machineTranslated: 'This post was machine-translated from Chinese.',
+    readOriginal: 'Read the original',
+    untranslated: 'This post is not available in English yet.',
   },
   zh: {
     siteDescription: '01iverx — 独立开发者，专注于 C++、Python 与 AI-Infra。',
@@ -26,6 +29,9 @@ export const UI = {
     langLabel: '语言',
     blogDescription: '01iverx 的 C++、Python 与 AI-Infra 技术笔记。',
     blogSubtitle: '记录 C++、Python 与 AI-Infra 的系统工程笔记。',
+    machineTranslated: '本文由英文原文机器翻译。',
+    readOriginal: '阅读原文',
+    untranslated: '本文暂无中文版。',
   },
 } satisfies Record<Lang, Record<string, string>>;
 

@@ -1,7 +1,7 @@
 ---
-import { getCollection } from 'astro:content';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PostCard from '../../../components/PostCard.astro';
+import { getLocalizedPosts } from '../../../blog';
 import { UI, localeStaticPaths, type Lang } from '../../../i18n';
 
 // 生成 /blog/（英文）和 /zh/blog/（中文）
@@ -12,11 +12,9 @@ export function getStaticPaths() {
 const { lang } = Astro.props as { lang: Lang };
 const t = UI[lang];
 
-const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
-  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
-);
+const posts = await getLocalizedPosts(lang);
 
-const allTags = Array.from(new Set(posts.flatMap((p) => p.data.tags))).sort();
+const allTags = Array.from(new Set(posts.flatMap(({ post }) => post.data.tags))).sort();
 ---
 
 <BaseLayout title="Blog // 01iverx" description={t.blogDescription} lang={lang}>
@@ -35,9 +33,9 @@ const allTags = Array.from(new Set(posts.flatMap((p) => p.data.tags))).sort();
   )}
 
   <div class="posts-list" id="postsList">
-    {posts.map((post) => (
+    {posts.map(({ slug, post }) => (
       <PostCard
-        slug={post.id}
+        slug={slug}
         title={post.data.title}
         description={post.data.description}
         date={post.data.date}

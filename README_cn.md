@@ -30,5 +30,6 @@ npm run dev
 npm run build
 ```
 
-- **新增博客**：在 `src/content/blog/` 目录下新增 `.md` 文件并推送到 `main`，GitHub Actions 会自动构建并部署到 [01iverx.github.io](https://01iverx.github.io)。
+- **新增博客**：在 `src/content/blog/zh/`（中文）或 `src/content/blog/en/`（英文）下新增 `.md` 文件并推送到 `main`，GitHub Actions 会自动构建并部署到 [01iverx.github.io](https://01iverx.github.io)。两个目录里文件名相同的是同一篇文章的两种语言。
+- **翻译博客**：运行 `npm run translate`，用 Gemini 生成缺少的另一种语言版本，检查后提交。先把 key 写进 `.env`（复制 `.env.example`；key 在 [Google AI Studio](https://aistudio.google.com/apikey) 创建）。原文改过后再运行，会重新翻译。`npm run translate -- --dry-run` 只列出要翻译的文章。机器译文的 frontmatter 带 `translatedFrom`，删掉这一行，脚本就不会覆盖你手改的译文。
 - **更新自我介绍**：编辑 `README.md`（英文，对应 `/`）或本 `README_cn.md`（中文，对应 `/zh/`）中的简介和技能列表，网站构建时会自动同步。
