@@ -21,6 +21,8 @@ const bars = Array.from({ length: 8 }, (_, i) => i < skill.level);
 <style>
   .skill-card {
     position: relative;
+    display: flex;
+    flex-direction: column;
     background: var(--panel-inner);
     border: 1px solid rgba(0, 240, 255, 0.22);
     padding: 16px 15px 18px;
@@ -60,6 +62,7 @@ const bars = Array.from({ length: 8 }, (_, i) => i < skill.level);
     display: grid;
     grid-template-columns: repeat(8, 1fr);
     gap: 3px;
+    margin-top: auto;
   }
 
   .pixel-bar i {

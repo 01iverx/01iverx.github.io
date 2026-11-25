@@ -6,6 +6,8 @@ import PostCard from '../components/PostCard.astro';
 import { loadProfileFromReadme } from '../data/profile';
 
 const profile = loadProfileFromReadme();
+// 技能数能被 3 整除时排 3 列，否则排 2 列，避免最后一行只剩一张卡片
+const skillCols = profile.skills.length % 3 === 0 ? 3 : 2;
 
 const recentPosts = (await getCollection('blog', ({ data }) => !data.draft))
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
@@ -35,7 +37,7 @@ const recentPosts = (await getCollection('blog', ({ data }) => !data.draft))
       <span>// CORE_MODULES</span>
       <span class="tag">[{profile.skills.length} LOADED]</span>
     </div>
-    <div class="skills-grid">
+    <div class="skills-grid" style={`--skill-cols: ${skillCols}`}>
       {profile.skills.map((skill) => <SkillCard skill={skill} />)}
     </div>
   </section>
@@ -136,7 +138,7 @@ const recentPosts = (await getCollection('blog', ({ data }) => !data.draft))
 
   .skills-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(var(--skill-cols, 3), 1fr);
     gap: 14px;
   }
 
