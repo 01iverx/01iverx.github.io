@@ -30,5 +30,6 @@ npm run dev
 npm run build
 ```
 
-- **New blog post**: add a `.md` file under `src/content/blog/` and push to `main`. GitHub Actions builds and deploys it to [01iverx.github.io](https://01iverx.github.io).
+- **New blog post**: add a `.md` file under `src/content/blog/en/` (English) or `src/content/blog/zh/` (Chinese) and push to `main`. GitHub Actions builds and deploys it to [01iverx.github.io](https://01iverx.github.io). A post with the same file name in both folders is one post in two languages.
+- **Translate posts**: run `npm run translate` to create the missing language version with Gemini, then review and commit it. Put your key in `.env` first (copy `.env.example`; get a key at [Google AI Studio](https://aistudio.google.com/apikey)). The script also re-translates a post when its original changes. `npm run translate -- --dry-run` shows what it would do. Machine translations carry `translatedFrom` in their frontmatter; delete that line to keep your own edits.
 - **Update your profile**: edit the intro and skills in `README.md` (English, shown at `/`) or `README_cn.md` (Chinese, shown at `/zh/`). The site syncs them at build time.

@@ -1,8 +1,8 @@
 ---
-import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import SkillCard from '../../components/SkillCard.astro';
 import PostCard from '../../components/PostCard.astro';
+import { getLocalizedPosts } from '../../blog';
 import { GITHUB_URL, README_FILES, loadProfileFromReadme } from '../../data/profile';
 import { localePath, localeStaticPaths, type Lang } from '../../i18n';
 
@@ -17,9 +17,7 @@ const githubLabel = GITHUB_URL.replace(/^https?:\/\//, '');
 // 技能数能被 3 整除时排 3 列，否则排 2 列，避免最后一行只剩一张卡片
 const skillCols = profile.skills.length % 3 === 0 ? 3 : 2;
 
-const recentPosts = (await getCollection('blog', ({ data }) => !data.draft))
-  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
-  .slice(0, 3);
+const recentPosts = (await getLocalizedPosts(lang)).slice(0, 3);
 ---
 
 <BaseLayout title={`${profile.name} // ${profile.role}`} description={profile.intro} lang={lang}>
@@ -60,9 +58,9 @@ const recentPosts = (await getCollection('blog', ({ data }) => !data.draft))
         <a href={localePath(lang, '/blog/')} class="more-link">VIEW ALL -&gt;</a>
       </div>
       <div class="posts-list">
-        {recentPosts.map((post) => (
+        {recentPosts.map(({ slug, post }) => (
           <PostCard
-            slug={post.id}
+            slug={slug}
             title={post.data.title}
             description={post.data.description}
             date={post.data.date}

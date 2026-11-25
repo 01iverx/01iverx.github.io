@@ -1,28 +1,45 @@
 ---
-import { getCollection, render } from 'astro:content';
+import type { InferGetStaticPropsType } from 'astro';
+import { render } from 'astro:content';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
-import { localePath, localeStaticPaths } from '../../../i18n';
+import { getLocalizedPosts } from '../../../blog';
+import { HTML_LANG, UI, localePath, localeStaticPaths } from '../../../i18n';
 
 export async function getStaticPaths() {
-  const posts = await getCollection('blog', ({ data }) => !data.draft);
-  // 每篇文章生成英文和中文两个地址：/blog/<id>/ 和 /zh/blog/<id>/
-  return localeStaticPaths().flatMap(({ params, props }) =>
-    posts.map((post) => ({
-      params: { ...params, slug: post.id },
-      props: { ...props, post },
-    }))
+  // 每篇文章生成英文和中文两个地址：/blog/<slug>/ 和 /zh/blog/<slug>/。
+  // 某种语言还没有译文时，该地址显示另一种语言的版本。
+  const pages = await Promise.all(
+    localeStaticPaths().map(async ({ params, props }) =>
+      (await getLocalizedPosts(props.lang)).map((item) => ({
+        params: { ...params, slug: item.slug },
+        props: { ...props, ...item },
+      }))
+    )
   );
+  return pages.flat();
 }
 
-const { post, lang } = Astro.props;
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+
+const { lang, slug, post, postLang } = Astro.props;
+const t = UI[lang];
 const { Content } = await render(post);
 const formattedDate = post.data.date.toISOString().slice(0, 10);
+const translatedFrom = post.data.translatedFrom;
 ---
 
 <BaseLayout title={`${post.data.title} // 01iverx`} description={post.data.description} lang={lang}>
   <a class="back-link" href={localePath(lang, '/blog/')}>&lt;- BACK TO /BLOG</a>
 
-  <article>
+  {postLang !== lang && <p class="post-note">{t.untranslated}</p>}
+  {postLang === lang && translatedFrom && (
+    <p class="post-note">
+      {t.machineTranslated}
+      <a href={localePath(translatedFrom, `/blog/${slug}/`)} hreflang={HTML_LANG[translatedFrom]}>{t.readOriginal} -&gt;</a>
+    </p>
+  )}
+
+  <article lang={HTML_LANG[postLang]}>
     <header class="article-header">
       <div class="article-meta">
         <time datetime={formattedDate}>{formattedDate}</time>
@@ -47,6 +64,20 @@ const formattedDate = post.data.date.toISOString().slice(0, 10);
     font-size: 0.78rem;
     color: var(--pink);
     margin-bottom: 18px;
+  }
+
+  .post-note {
+    margin-bottom: 18px;
+    padding: 8px 12px;
+    border-left: 3px solid var(--yellow);
+    background: rgba(252, 238, 9, 0.08);
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  .post-note a {
+    margin-left: 8px;
   }
 
   .article-header {

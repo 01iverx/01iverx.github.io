@@ -3,10 +3,10 @@ media:
   output: /images
 
 content:
-  - name: blog
-    label: Blog Posts
+  - name: blog_zh
+    label: 博客（中文）
     type: collection
-    path: src/content/blog
+    path: src/content/blog/zh
     view:
       fields: [title, date, draft]
     fields:
@@ -32,6 +32,37 @@ content:
         default: false
       - name: body
         label: 正文
+        type: rich-text
+
+  - name: blog_en
+    label: Blog (English)
+    type: collection
+    path: src/content/blog/en
+    view:
+      fields: [title, date, draft]
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+      - name: description
+        label: Description
+        type: string
+        required: true
+      - name: date
+        label: Date
+        type: date
+        required: true
+      - name: tags
+        label: Tags
+        type: string
+        list: true
+      - name: draft
+        label: Draft
+        type: boolean
+        default: false
+      - name: body
+        label: Body
         type: rich-text
 
   - name: readme
