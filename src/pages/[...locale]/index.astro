@@ -1,18 +1,28 @@
 ---
 import { getCollection } from 'astro:content';
-import BaseLayout from '../layouts/BaseLayout.astro';
-import SkillCard from '../components/SkillCard.astro';
-import PostCard from '../components/PostCard.astro';
-import { loadProfileFromReadme } from '../data/profile';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SkillCard from '../../components/SkillCard.astro';
+import PostCard from '../../components/PostCard.astro';
+import { GITHUB_URL, README_FILES, loadProfileFromReadme } from '../../data/profile';
+import { localePath, localeStaticPaths, type Lang } from '../../i18n';
 
-const profile = loadProfileFromReadme();
+// 生成 /（英文，读 README.md）和 /zh/（中文，读 README_cn.md）
+export function getStaticPaths() {
+  return localeStaticPaths();
+}
+
+const { lang } = Astro.props as { lang: Lang };
+const profile = loadProfileFromReadme(lang);
+const githubLabel = GITHUB_URL.replace(/^https?:\/\//, '');
+// 技能数能被 3 整除时排 3 列，否则排 2 列，避免最后一行只剩一张卡片
+const skillCols = profile.skills.length % 3 === 0 ? 3 : 2;
 
 const recentPosts = (await getCollection('blog', ({ data }) => !data.draft))
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
   .slice(0, 3);
 ---
 
-<BaseLayout title={`${profile.name} // ${profile.role}`} description={profile.intro}>
+<BaseLayout title={`${profile.name} // ${profile.role}`} description={profile.intro} lang={lang}>
   <section class="hero">
     <div class="pixel-avatar" aria-hidden="true">
       <img src="/favicon.svg" alt="" width="64" height="64" />
@@ -20,11 +30,14 @@ const recentPosts = (await getCollection('blog', ({ data }) => !data.draft))
     <div class="hero-meta">
       <h1 class="glitch" data-text={profile.name}>{profile.name}</h1>
       <div class="role-badge">{profile.role}</div>
+      <a class="hero-link" href={GITHUB_URL} target="_blank" rel="noopener noreferrer">
+        {githubLabel} ↗
+      </a>
     </div>
   </section>
 
   <section class="terminal-box">
-    <span class="terminal-cmd">&gt; cat ~/README.md</span>
+    <span class="terminal-cmd">&gt; cat ~/{README_FILES[lang]}</span>
     <p class="intro-text">
       {profile.intro}<span class="cursor" aria-hidden="true"></span>
     </p>
@@ -35,7 +48,7 @@ const recentPosts = (await getCollection('blog', ({ data }) => !data.draft))
       <span>// CORE_MODULES</span>
       <span class="tag">[{profile.skills.length} LOADED]</span>
     </div>
-    <div class="skills-grid">
+    <div class="skills-grid" style={`--skill-cols: ${skillCols}`}>
       {profile.skills.map((skill) => <SkillCard skill={skill} />)}
     </div>
   </section>
@@ -44,7 +57,7 @@ const recentPosts = (await getCollection('blog', ({ data }) => !data.draft))
     <section class="block">
       <div class="section-header">
         <span>// RECENT_LOGS</span>
-        <a href="/blog" class="more-link">VIEW ALL -&gt;</a>
+        <a href={localePath(lang, '/blog/')} class="more-link">VIEW ALL -&gt;</a>
       </div>
       <div class="posts-list">
         {recentPosts.map((post) => (
@@ -54,6 +67,7 @@ const recentPosts = (await getCollection('blog', ({ data }) => !data.draft))
             description={post.data.description}
             date={post.data.date}
             tags={post.data.tags}
+            lang={lang}
           />
         ))}
       </div>
@@ -87,6 +101,12 @@ const recentPosts = (await getCollection('blog', ({ data }) => !data.draft))
     image-rendering: pixelated;
   }
 
+  .hero-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .role-badge {
     display: inline-flex;
     align-items: center;
@@ -97,6 +117,13 @@ const recentPosts = (await getCollection('blog', ({ data }) => !data.draft))
     font-family: var(--mono);
     font-size: 0.86rem;
     color: var(--yellow);
+    letter-spacing: 0.04em;
+  }
+
+  .hero-link {
+    margin-top: 10px;
+    font-family: var(--mono);
+    font-size: 0.8rem;
     letter-spacing: 0.04em;
   }
 
@@ -136,7 +163,7 @@ const recentPosts = (await getCollection('blog', ({ data }) => !data.draft))
 
   .skills-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(var(--skill-cols, 3), 1fr);
     gap: 14px;
   }
 

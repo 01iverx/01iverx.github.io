@@ -1,0 +1,64 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="404 // 01iverx" description="Page not found." translated={false}>
+  <section class="not-found">
+    <h1 class="glitch" data-text="ERR_404">ERR_404</h1>
+
+    <div class="terminal-box">
+      <span class="terminal-cmd">&gt; GET <span id="reqPath"></span></span>
+      <p class="terminal-msg">404 NOT FOUND: This page does not exist. It may have been moved or deleted.</p>
+      <p class="terminal-msg" lang="zh-CN">页面不存在，可能已被移动或删除。</p>
+    </div>
+
+    <div class="jump-links">
+      <a class="jump-link" href="/">&lt;- BACK TO /HOME</a>
+      <a class="jump-link" href="/blog/">GO TO /BLOG -&gt;</a>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .not-found {
+    display: grid;
+    gap: 22px;
+  }
+
+  .terminal-box {
+    background: var(--panel-inner);
+    border: 1px solid var(--border-soft);
+    padding: 16px 18px;
+  }
+
+  .terminal-cmd {
+    display: block;
+    margin-bottom: 6px;
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    color: var(--green);
+    word-break: break-all;
+  }
+
+  .terminal-msg {
+    color: var(--muted);
+    font-size: 0.94rem;
+  }
+
+  .jump-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+  }
+
+  .jump-link {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--pink);
+  }
+</style>
+
+<script>
+  const reqPath = document.getElementById('reqPath');
+  if (reqPath) reqPath.textContent = window.location.pathname;
+</script>
