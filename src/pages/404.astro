@@ -2,18 +2,19 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout title="404 // 01iverx" description="页面不存在。">
+<BaseLayout title="404 // 01iverx" description="Page not found." translated={false}>
   <section class="not-found">
     <h1 class="glitch" data-text="ERR_404">ERR_404</h1>
 
     <div class="terminal-box">
       <span class="terminal-cmd">&gt; GET <span id="reqPath"></span></span>
-      <p class="terminal-msg">404 NOT FOUND：这个页面不存在，可能已被移动或删除。</p>
+      <p class="terminal-msg">404 NOT FOUND: This page does not exist. It may have been moved or deleted.</p>
+      <p class="terminal-msg" lang="zh-CN">页面不存在，可能已被移动或删除。</p>
     </div>
 
     <div class="jump-links">
       <a class="jump-link" href="/">&lt;- BACK TO /HOME</a>
-      <a class="jump-link" href="/blog">GO TO /BLOG -&gt;</a>
+      <a class="jump-link" href="/blog/">GO TO /BLOG -&gt;</a>
     </div>
   </section>
 </BaseLayout>

@@ -1,26 +1,44 @@
 ---
 import '../styles/global.css';
 import CyberCanvas from '../components/CyberCanvas.astro';
+import { GITHUB_URL } from '../data/profile';
+import { HTML_LANG, LANGS, LANG_LABELS, UI, localePath, splitLangPath, type Lang } from '../i18n';
 
 interface Props {
   title: string;
   description?: string;
+  lang?: Lang;
+  /** 页面没有另一种语言的版本时设为 false（如 404），语言切换会跳到对应语言的首页 */
+  translated?: boolean;
 }
 
-const { title, description = '01iverx — 独立开发者，专注于 C++、Python 与 AI-Infra。' } = Astro.props;
-const pathname = Astro.url.pathname;
-const isHome = pathname === '/' || pathname === '/index.html';
-const isBlog = pathname.startsWith('/blog');
+const { title, lang = 'en', translated = true } = Astro.props;
+const t = UI[lang];
+const description = Astro.props.description ?? t.siteDescription;
+
+// 去掉语言前缀后的路径：用来判断当前栏目，并生成另一种语言的同一页面链接
+const { path } = splitLangPath(Astro.url.pathname);
+const isHome = translated && path === '/';
+const isBlog = translated && path.startsWith('/blog');
+const twinPath = translated ? path : '/';
+const alternates =
+  translated && Astro.site
+    ? LANGS.map((code) => ({ code, href: new URL(localePath(code, path), Astro.site).href }))
+    : [];
 ---
 
 <!doctype html>
-<html lang="zh-CN">
+<html lang={HTML_LANG[lang]}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    {alternates.map((alt) => (
+      <link rel="alternate" hreflang={HTML_LANG[alt.code]} href={alt.href} />
+    ))}
+    {alternates.length > 0 && <link rel="alternate" hreflang="x-default" href={alternates[0].href} />}
   </head>
   <body>
     <CyberCanvas />
@@ -28,15 +46,28 @@ const isBlog = pathname.startsWith('/blog');
 
     <div class="hud-wrapper">
       <header class="hud-topbar">
-        <a class="hud-brand" href="/">
+        <a class="hud-brand" href={localePath(lang, '/')}>
           <span class="pulse-pixel" aria-hidden="true"></span>
           <span>NODE // 01IVERX</span>
         </a>
 
-        <nav class="hud-nav" aria-label="主导航">
-          <a class={`nav-link ${isHome ? 'active' : ''}`} href="/">/HOME</a>
-          <a class={`nav-link ${isBlog ? 'active' : ''}`} href="/blog">/BLOG</a>
+        <nav class="hud-nav" aria-label={t.navLabel}>
+          <a class={`nav-link ${isHome ? 'active' : ''}`} href={localePath(lang, '/')}>/HOME</a>
+          <a class={`nav-link ${isBlog ? 'active' : ''}`} href={localePath(lang, '/blog/')}>/BLOG</a>
           <button class="hud-btn" id="fxToggle" type="button">FX: ON</button>
+          <div class="lang-switch" role="group" aria-label={t.langLabel}>
+            {LANGS.map((code) => (
+              <a
+                class={`lang-opt ${code === lang ? 'active' : ''}`}
+                href={localePath(code, twinPath)}
+                hreflang={HTML_LANG[code]}
+                lang={HTML_LANG[code]}
+                aria-current={code === lang ? 'true' : undefined}
+              >
+                {LANG_LABELS[code]}
+              </a>
+            ))}
+          </div>
         </nav>
       </header>
 
@@ -45,7 +76,7 @@ const isBlog = pathname.startsWith('/blog');
       </main>
 
       <footer class="hud-footer">
-        [ 2026 © 01IVERX // ASTRO + GITHUB PAGES ]
+        [ 2026 © <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">01IVERX</a> // ASTRO + GITHUB PAGES ]
       </footer>
     </div>
   </body>

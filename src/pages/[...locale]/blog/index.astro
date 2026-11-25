@@ -1,7 +1,16 @@
 ---
 import { getCollection } from 'astro:content';
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import PostCard from '../../components/PostCard.astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PostCard from '../../../components/PostCard.astro';
+import { UI, localeStaticPaths, type Lang } from '../../../i18n';
+
+// 生成 /blog/（英文）和 /zh/blog/（中文）
+export function getStaticPaths() {
+  return localeStaticPaths();
+}
+
+const { lang } = Astro.props as { lang: Lang };
+const t = UI[lang];
 
 const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
@@ -10,10 +19,10 @@ const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
 const allTags = Array.from(new Set(posts.flatMap((p) => p.data.tags))).sort();
 ---
 
-<BaseLayout title="Blog // 01iverx" description="01iverx 的 C++、Python 与 AI-Infra 技术笔记。">
+<BaseLayout title="Blog // 01iverx" description={t.blogDescription} lang={lang}>
   <div class="blog-header">
     <h1 class="glitch" data-text="DEV_LOGS">DEV_LOGS</h1>
-    <p class="blog-sub">记录 C++、Python 与 AI-Infra 的系统工程笔记。</p>
+    <p class="blog-sub">{t.blogSubtitle}</p>
   </div>
 
   {allTags.length > 0 && (
@@ -33,6 +42,7 @@ const allTags = Array.from(new Set(posts.flatMap((p) => p.data.tags))).sort();
         description={post.data.description}
         date={post.data.date}
         tags={post.data.tags}
+        lang={lang}
       />
     ))}
   </div>

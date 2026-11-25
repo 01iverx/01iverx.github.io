@@ -103,6 +103,7 @@ body.fx-off .scanlines {
 
 .hud-nav {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
 }
@@ -138,6 +139,30 @@ body.fx-off .scanlines {
   background: rgba(255, 42, 133, 0.2);
   box-shadow: 0 0 12px rgba(255, 42, 133, 0.45);
   transform: translate(-1px, -1px);
+}
+
+/* 语言切换：EN / 中文 */
+.lang-switch {
+  display: inline-flex;
+  border: 1px solid var(--border);
+}
+
+.lang-opt {
+  padding: 5px 9px;
+  font-size: 0.75rem;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+
+.lang-opt + .lang-opt {
+  border-left: 1px solid var(--border);
+}
+
+.lang-opt:hover,
+.lang-opt.active {
+  color: var(--cyan);
+  background: rgba(0, 240, 255, 0.1);
+  text-shadow: none;
 }
 
 /* 主赛博切角面板 */

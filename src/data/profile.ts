@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { DEFAULT_LANG, type Lang } from '../i18n';
 
 export interface SkillItem {
   id: string;
@@ -16,14 +17,47 @@ export interface ProfileData {
   skills: SkillItem[];
 }
 
+/** GitHub 主页 */
+export const GITHUB_URL = 'https://github.com/01iverx';
+
+/** 每种语言读哪个文件：英文 README.md，中文 README_cn.md */
+export const README_FILES: Record<Lang, string> = {
+  en: 'README.md',
+  zh: 'README_cn.md',
+};
+
+/** README 里缺少对应内容时的兜底文字 */
+const DEFAULTS: Record<Lang, Pick<ProfileData, 'name' | 'role' | 'intro'>> = {
+  en: {
+    name: '01iverx',
+    role: 'Indie Developer',
+    intro: "Hi, I'm 01iverx, an indie developer.",
+  },
+  zh: {
+    name: '01iverx',
+    role: '独立开发者 · Indie Developer',
+    intro: '你好，我是 01iverx，一名独立开发者。',
+  },
+};
+
 const ACCENTS: Array<'cyan' | 'yellow' | 'pink'> = ['cyan', 'yellow', 'pink'];
 
+/** 读取该语言的 README；文件不存在时退回英文的 README.md */
+function readReadme(lang: Lang): string {
+  for (const file of [README_FILES[lang], README_FILES[DEFAULT_LANG]]) {
+    const filePath = path.resolve(process.cwd(), file);
+    if (fs.existsSync(filePath)) return fs.readFileSync(filePath, 'utf-8');
+  }
+  return '';
+}
+
 /**
- * 构建时直接读取根目录 README.md，实现仓库简介与个人主页单一内容源同步。
+ * 构建时读取根目录的 README（英文 README.md / 中文 README_cn.md），
+ * 让仓库简介与个人主页使用同一份内容。
  */
-export function loadProfileFromReadme(): ProfileData {
-  const readmePath = path.resolve(process.cwd(), 'README.md');
-  const raw = fs.existsSync(readmePath) ? fs.readFileSync(readmePath, 'utf-8') : '';
+export function loadProfileFromReadme(lang: Lang = DEFAULT_LANG): ProfileData {
+  const raw = readReadme(lang);
+  const fallback = DEFAULTS[lang];
 
   const nameMatch = raw.match(/^#\s+(.+)$/m);
   const roleMatch = raw.match(/^>\s+(.+)$/m);
@@ -31,7 +65,8 @@ export function loadProfileFromReadme(): ProfileData {
     /<!--\s*profile:intro:start\s*-->([\s\S]*?)<!--\s*profile:intro:end\s*-->/
   );
 
-  const skillSectionMatch = raw.match(/##\s+专业技能([\s\S]*?)(?:\n---|\n##\s|$)/);
+  // 技能段落标题：英文 "## Skills"，中文 "## 专业技能"
+  const skillSectionMatch = raw.match(/##\s+(?:Skills|专业技能)([\s\S]*?)(?:\n---|\n##\s|$)/i);
   const skills: SkillItem[] = [];
 
   if (skillSectionMatch) {
@@ -52,44 +87,16 @@ export function loadProfileFromReadme(): ProfileData {
     }
   }
 
+  if (skills.length === 0) {
+    console.warn(
+      `[profile] No skills found in ${README_FILES[lang]} (expected a "## Skills" or "## 专业技能" list).`
+    );
+  }
+
   return {
-    name: nameMatch ? nameMatch[1].trim() : '01iverx',
-    role: roleMatch ? roleMatch[1].trim() : '独立开发者 · Indie Developer',
-    intro: introMatch
-      ? introMatch[1].trim().replace(/\*\*(.+?)\*\*/g, '$1')
-      : '你好，我是 01iverx，一名独立开发者。专注高性能系统工程与人工智能基础设施。',
-    skills:
-      skills.length > 0
-        ? skills
-        : [
-            {
-              id: 'MOD_01',
-              name: 'C++',
-              description: '高性能系统编程、内存与并发调优，构建低延迟核心引擎。',
-              level: 7,
-              accent: 'cyan',
-            },
-            {
-              id: 'MOD_02',
-              name: 'Python',
-              description: '工程自动化、服务编排与 AI 生态开发。',
-              level: 7,
-              accent: 'yellow',
-            },
-            {
-              id: 'MOD_03',
-              name: 'AI-Infra',
-              description: '专注模型部署加速，打通 VLA 模型导出 → 算子优化 → 量化 → Thor 部署全链路。',
-              level: 8,
-              accent: 'pink',
-            },
-            {
-              id: 'MOD_04',
-              name: '自动驾驶地图引擎',
-              description: '车端地图引擎架构与高性能数据播发，覆盖地图 ODD、行泊车地图、海外合规与仿真 Pipeline。',
-              level: 7,
-              accent: 'cyan',
-            },
-          ],
+    name: nameMatch ? nameMatch[1].trim() : fallback.name,
+    role: roleMatch ? roleMatch[1].trim() : fallback.role,
+    intro: introMatch ? introMatch[1].trim().replace(/\*\*(.+?)\*\*/g, '$1') : fallback.intro,
+    skills,
   };
 }

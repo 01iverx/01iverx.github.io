@@ -35,9 +35,20 @@ content:
         type: rich-text
 
   - name: readme
-    label: 个人简介 (README.md)
+    label: 英文简介 (README.md)
     type: file
     path: README.md
+    fields:
+      - name: body
+        label: 内容
+        type: code
+        options:
+          language: markdown
+
+  - name: readme_cn
+    label: 中文简介 (README_cn.md)
+    type: file
+    path: README_cn.md
     fields:
       - name: body
         label: 内容
